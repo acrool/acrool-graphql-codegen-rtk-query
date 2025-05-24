@@ -248,7 +248,7 @@ ${print(node)}`;
     }
 
     // 移除 fragments getter，覆寫為空
-    public get fragments(): string {
-        return '';
-    }
+    // public get fragments(): string {
+    //     return '';
+    // }
 }
