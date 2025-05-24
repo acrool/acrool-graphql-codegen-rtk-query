@@ -19,9 +19,8 @@
 ## Features
 
 - Graphql code generator plugins
-- Quickly output grpahql .gql to rtk-query hooks
+- Quickly output grpahql .graphql to rtk-query hooks
 - Directly customize using `rtk-query` methods, such as: `useQuery`, `useMutation`, `useInfiniteQuery`
-- Use `createQueryAndQueryClientHook` to generate `useQuery`, functions related to `useQueryClient`, such as `getQueryKey`, `fetchQuery`, `reFetchQuery`, `setQueryData`, `invalidateQueries`
 
 
 ## Install
@@ -47,40 +46,37 @@ add package.json script
 ./codegen.ts
 
 ```ts
-import { CodegenConfig } from '@graphql-codegen/cli'
+import {CodegenConfig} from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
     schema: [
         './schema.graphql',
-        'scalar Upload'
+        'scalar Upload',
     ],
     documents: [
-        './src/store/fragment.gql',
-        './src/store/{main,custom}/**/{doc,subscription}.gql',
+        './src/store/__generated__/**/*.graphql',
     ],
     config: {
-        maybeValue: "T | undefined",
-        inputMaybeValue: "T | null",
+        maybeValue: 'T | undefined',
+        inputMaybeValue: 'T | null',
     },
     generates: {
-        './src/library/graphql/__generated__.ts': {
+        './src/store/__generated__/types.ts': {
             plugins: [
-                // https://the-guild.dev/graphql/codegen/plugins/typescript/typescript
                 'typescript',
-                // https://the-guild.dev/graphql/codegen/plugins/typescript/typescript-operations
-                'typescript-operations',
-                '@acrool/graphql-codegen-rtk-query',
+                'typescript-resolvers',
                 {
                     add: {
                         content: `
-import {ReadStream} from 'fs-capacitor';
 import {EDataLevel} from '@acrool/react-gantt';
+import {ReadStream} from 'fs-capacitor';
+import {IUseFetcherArgs} from '@/library/graphql/fetcher';
 
 interface GraphQLFileUpload {
-  filename: string;
-  mimetype: string;
-  encoding: string;
-  createReadStream(options?:{encoding?: string, highWaterMark?: number}): ReadStream;
+  filename: string
+  mimetype: string
+  encoding: string
+  createReadStream(options?:{encoding?: string, highWaterMark?: number}): ReadStream
 }`
                     }
                 },
@@ -89,12 +85,10 @@ interface GraphQLFileUpload {
                 typesPrefix: 'I',
                 enumPrefix: false,
                 declarationKind: 'interface',
-                withMutationFn: true,
                 strictScalars: false,
                 skipTypename: true,
                 inputValue: true,
-                // avoidOptionals: true,
-                // ignoreEnumValuesFromSchema: false,
+                dedupeFragments: true,
                 scalars: {
                     Upload: 'Promise<GraphQLFileUpload>',
                     ID: 'string',
@@ -107,28 +101,54 @@ interface GraphQLFileUpload {
                     Duration: 'number',
                     Locale: 'string',
                     TransactionID: 'string',
-                    // OrderBy: `'desc'|'asc'`,
                     OrderBy: 'string',
                     Timestamp: 'string',
+                    DataLevelProject: 'EDataLevel.Project',
+                    DataLevelTeam: 'EDataLevel.Team',
+                    DataLevelTask: 'EDataLevel.Task',
                 },
+            }
+        },
+        './src/store/__generated__/': {
+            preset: 'near-operation-file',
+            presetConfig: {
+                extension: '.generated.ts',
+                baseTypesPath: './types.ts'
+            },
+            plugins: [
+                {
+                    add: {
+                        content: 'import {IUseFetcherArgs} from \'@/library/graphql/fetcher\';'
+                    }
+                },
+                'typescript-operations',
+                {
+                    '@acrool/graphql-codegen-rtk-query': {
+                        importBaseApiFrom: '@/library/redux/baseApi',
+                        importBaseApiAlternateName: 'baseApi',
+                        exportHooks: true,
+                        exportApi: true,
+                        exportDocument: false,
+                        exportApiName: 'api',
+                        exportDefaultApiName: true,
+                    },
+                },
+            ],
+            config: {
+                typesPrefix: 'I',
+                enumPrefix: false,
+                declarationKind: 'interface',
+                withMutationFn: true,
+                strictScalars: false,
+                skipTypename: true,
+                inputValue: true,
                 omitOperationSuffix: true,
-                exposeDocument: false,
-                exposeQuerySetData: true,
-                exposeQueryClientHook: true,
-                exposeFetcher: true,
-                fetcher: {
-                    queryFunc: './createQueryHookFactory#createQueryHook',
-                    queryAndQueryClientFunc: './createQueryHookFactory#createQueryAndQueryClientHook',
-                    infiniteQueryFunc: './createQueryHookFactory#createInfiniteQueryHook',
-                    mutationFunc: './createQueryHookFactory#createMutationHook',
-                    isQueryAndQueryClient: true,
-                }
             }
         },
     },
-}
+};
 
-export default config
+export default config;
 ```
 
 copy ./src/example in your project lib path
