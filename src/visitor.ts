@@ -79,8 +79,6 @@ export class RTKQueryVisitor extends ClientSideBaseVisitor<
         ];
     }
 
-
-
     public getInjectCall() {
         if (!this.hasOperations) {
             return '';
@@ -123,7 +121,6 @@ ${this.config.exportDefaultApi ?
         return '';
     }
 
-
     /**
      * Generate subscription Hook
      * @param node
@@ -155,8 +152,6 @@ ${this.config.exportDefaultApi ?
       ${impl}
     `;
     }
-
-
 
     protected buildOperation(
         node: OperationDefinitionNode,
@@ -190,7 +185,6 @@ ${this.config.exportDefaultApi ?
             return '';
         }
 
-
         const Generics = `${operationResultType}, IUseFetcherArgs<${operationVariablesTypes}>${
             hasRequiredVariables ? '' : ' | void'
         }`;
@@ -216,7 +210,6 @@ ${this.config.exportDefaultApi ?
             if (operationType === 'Mutation') {
                 this._hooks.push(`use${pascalCase(operationName)}Mutation`);
             }
-
         }
 
         return '';
@@ -229,8 +222,33 @@ ${this.config.exportDefaultApi ?
         if (!operationName) return null;
 
         const documentVar = `${pascalCase(operationName)}Document`;
-        const queryString = `\`
-${print(node)}\``;
-        return `${this.config.exportDocument ? 'export ' : ' '}const ${documentVar} = ${queryString};`;
+        const queryString = `
+${print(node)}`;
+
+        // 取得 operation 依賴的 fragment 名稱
+        const fragmentSpreads = [];
+        const visitSelectionSet = (selectionSet) => {
+            if (!selectionSet || !selectionSet.selections) return;
+            for (const selection of selectionSet.selections) {
+                if (selection.kind === 'FragmentSpread') {
+                    fragmentSpreads.push(selection.name.value);
+                } else if (selection.selectionSet) {
+                    visitSelectionSet(selection.selectionSet);
+                }
+            }
+        };
+        visitSelectionSet(node.selectionSet);
+        // 組合 fragment 變數
+        let fragmentVars = '';
+        if (fragmentSpreads.length > 0) {
+            fragmentVars = '\n' + fragmentSpreads.map(name => `\${${pascalCase(name)}}`).join('');
+        }
+
+        return `${this.config.exportDocument ? 'export ' : ' '}const ${documentVar} = \`${queryString}${fragmentVars}\`;`;
+    }
+
+    // 移除 fragments getter，覆寫為空
+    public get fragments(): string {
+        return '';
     }
 }

@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Fragment Plugin should generate fragment and query correctly 1`] = `
+{
+  "content": "
+export const GetIconDocument = \`
+query getIcon {
+  iconSvg {
+    ...ResultIconSvg
+  }
+}
+\${ResultIconSvg}\`;
+
+const injectedRtkApi = baseApi.injectEndpoints({
+  endpoints: (build) => ({
+    getIcon: build.query<GetIconQuery, IUseFetcherArgs<GetIconQueryVariables> | void>({
+      query: (args) => ({ document: GetIconDocument, args })
+    }),
+  }),
+});
+
+export default injectedRtkApi;
+export const { useGetIconQuery, useLazyGetIconQuery } = injectedRtkApi;
+
+
+
+",
+  "prepend": [
+    "import { baseApi } from '@/library/graphql/baseApi';",
+    "import {gql, useSubscription, SubscriptionHookOptions} from '@apollo/client';",
+  ],
+}
+`;
