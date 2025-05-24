@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 1.0.5-alpha.0 (2025-05-24)
+
 ### [3.0.1](https://github.com/acrool/acrool-graphql-codegen/compare/v3.0.0...v3.0.1) (2024-09-28)
 
 ## [3.0.0](https://github.com/acrool/acrool-graphql-codegen/compare/v2.0.2...v3.0.0) (2024-09-28)
