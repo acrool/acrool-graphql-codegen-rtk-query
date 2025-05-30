@@ -74,7 +74,7 @@ export class RTKQueryVisitor extends ClientSideBaseVisitor<
 
         return [
             ...baseImports,
-            `import { ${this.config.importBaseApiAlternateName} } from '${this.config.importBaseApiFrom}';`,
+            `import {${this.config.importBaseApiAlternateName}} from '${this.config.importBaseApiFrom}';`,
             'import {gql, useSubscription, SubscriptionHookOptions} from \'@apollo/client\';',
         ];
     }
